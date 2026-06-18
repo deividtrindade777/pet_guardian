@@ -1,5 +1,6 @@
 import { addDoc, collection } from "firebase/firestore";
 import { auth, db } from "./firebase";
+import { enviarEmail } from "./emailService";
 
 export async function criarNotificacao({
   petId,
@@ -17,4 +18,10 @@ export async function criarNotificacao({
     dataEvento,
     concluido: false,
   });
+
+  await enviarEmail(
+    auth.currentUser.email,
+    `PetGuardian - ${tipo}`,
+    `${mensagem}\n\nData do evento: ${dataEvento}`
+  );
 }

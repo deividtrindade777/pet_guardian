@@ -19,107 +19,56 @@ function Dashboard() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) return;
 
-      const petsQuery = query(
-        collection(db, "pets"),
-        where("userId", "==", user.uid)
+      const petsSnap = await getDocs(
+        query(collection(db, "pets"), where("userId", "==", user.uid))
       );
 
-      const petsSnap = await getDocs(petsQuery);
-
-      const listaPets = petsSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setPets(listaPets);
+      setPets(petsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
 
       const vacinasSnap = await getDocs(
-        query(
-          collection(db, "vacinas"),
-          where("userId", "==", user.uid)
-        )
+        query(collection(db, "vacinas"), where("userId", "==", user.uid))
       );
 
       const consultasSnap = await getDocs(
-        query(
-          collection(db, "consultas"),
-          where("userId", "==", user.uid)
-        )
+        query(collection(db, "consultas"), where("userId", "==", user.uid))
       );
 
       const medicamentosSnap = await getDocs(
-        query(
-          collection(db, "medicamentos"),
-          where("userId", "==", user.uid)
-        )
+        query(collection(db, "medicamentos"), where("userId", "==", user.uid))
       );
 
       const banhoTosaSnap = await getDocs(
-        query(
-          collection(db, "banhoTosa"),
-          where("userId", "==", user.uid)
-        )
-      );
-
-      setVacinas(
-        vacinasSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-      );
-
-      setConsultas(
-        consultasSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-      );
-
-      setMedicamentos(
-        medicamentosSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-      );
-
-      setBanhoTosa(
-        banhoTosaSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
+        query(collection(db, "banhoTosa"), where("userId", "==", user.uid))
       );
 
       const notificacoesSnap = await getDocs(
-        query(
-          collection(db, "notificacoes"),
-          where("userId", "==", user.uid)
-        )
+        query(collection(db, "notificacoes"), where("userId", "==", user.uid))
       );
 
-      setNotificacoes(
-        notificacoesSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-      );
+      setVacinas(vacinasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setConsultas(consultasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setMedicamentos(medicamentosSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setBanhoTosa(banhoTosaSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setNotificacoes(notificacoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
-    async function testarEmail() {
-      try {
-        await enviarEmail(
-          "silvadeivi321@gmail.com",
-          "Teste PetGuardian",
-          "Se você recebeu este email, o EmailJS está funcionando."
-        );
-
-        alert("Email enviado!");
-      } catch (error) {
-        console.error(error);
-        alert("Erro ao enviar email.");
-      }
-    }
 
     return () => unsubscribe();
   }, []);
+
+  async function testarEmail() {
+    try {
+      await enviarEmail(
+        "silvadeivi321@gmail.com",
+        "Teste PetGuardian",
+        "Se você recebeu este email, o EmailJS está funcionando."
+      );
+
+      alert("Email enviado!");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao enviar email.");
+    }
+  }
 
   function buscarNomePet(petId) {
     const pet = pets.find((p) => p.id === petId);
@@ -164,9 +113,7 @@ function Dashboard() {
     pertenceAoFiltro(m)
   );
 
-  const notificacoesPendentes = notificacoes.filter(
-    (n) => !n.concluido
-  );
+  const notificacoesPendentes = notificacoes.filter((n) => !n.concluido);
 
   return (
     <>
@@ -174,6 +121,21 @@ function Dashboard() {
 
       <div className="container">
         <h1>Dashboard</h1>
+
+        <button
+          onClick={testarEmail}
+          style={{
+            marginTop: "10px",
+            padding: "10px 15px",
+            background: "#1976d2",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          Testar Email
+        </button>
 
         <select
           value={petSelecionado}
@@ -199,29 +161,16 @@ function Dashboard() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit, minmax(180px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
             gap: "15px",
             marginTop: "20px",
           }}
         >
           <Card titulo="🐾 Pets" valor={pets.length} />
-          <Card
-            titulo="💉 Vacinas próximas"
-            valor={vacinasProximas.length}
-          />
-          <Card
-            titulo="🩺 Consultas próximas"
-            valor={consultasProximas.length}
-          />
-          <Card
-            titulo="💊 Medicamentos"
-            valor={medicamentosAtivos.length}
-          />
-          <Card
-            titulo="✂️ Banho/Tosa"
-            valor={banhosProximos.length}
-          />
+          <Card titulo="💉 Vacinas próximas" valor={vacinasProximas.length} />
+          <Card titulo="🩺 Consultas próximas" valor={consultasProximas.length} />
+          <Card titulo="💊 Medicamentos" valor={medicamentosAtivos.length} />
+          <Card titulo="✂️ Banho/Tosa" valor={banhosProximos.length} />
         </div>
 
         <Secao titulo="💉 Vacinas próximas">
@@ -244,9 +193,7 @@ function Dashboard() {
           ) : (
             consultasProximas.map((consulta) => (
               <Item key={consulta.id}>
-                <strong>
-                  {buscarNomePet(consulta.petId)}
-                </strong>
+                <strong>{buscarNomePet(consulta.petId)}</strong>
                 <p>Data: {consulta.dataConsulta}</p>
                 <p>Clínica: {consulta.nomeClinica}</p>
               </Item>
@@ -260,9 +207,7 @@ function Dashboard() {
           ) : (
             banhosProximos.map((registro) => (
               <Item key={registro.id}>
-                <strong>
-                  {buscarNomePet(registro.petId)}
-                </strong>
+                <strong>{buscarNomePet(registro.petId)}</strong>
                 <p>Banho: {registro.dataBanho}</p>
                 <p>Tosa: {registro.dataTosa}</p>
               </Item>
@@ -277,18 +222,9 @@ function Dashboard() {
             notificacoesPendentes.map((notificacao) => (
               <Item key={notificacao.id}>
                 <strong>{notificacao.tipo}</strong>
-
-                <p>
-                  Pet: {buscarNomePet(notificacao.petId)}
-                </p>
-
-                <p>
-                  Vencimento: {notificacao.dataEvento}
-                </p>
-
-                <p>
-                  {notificacao.mensagem}
-                </p>
+                <p>Pet: {buscarNomePet(notificacao.petId)}</p>
+                <p>Vencimento: {notificacao.dataEvento}</p>
+                <p>{notificacao.mensagem}</p>
               </Item>
             ))
           )}
@@ -309,12 +245,7 @@ function Card({ titulo, valor }) {
         width: "100%",
       }}
     >
-      <h3
-        style={{
-          fontSize: "16px",
-          marginBottom: "10px",
-        }}
-      >
+      <h3 style={{ fontSize: "16px", marginBottom: "10px" }}>
         {titulo}
       </h3>
 
