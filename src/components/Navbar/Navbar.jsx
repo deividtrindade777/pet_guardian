@@ -1,13 +1,25 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./Navbar.css";
 
 function Navbar() {
+  const [aberto, setAberto] = useState(false);
+
   return (
     <>
-      <aside className="sidebar">
-        <h2>🐾 PetGuardian</h2>
+      <header className="topbar">
+        <button
+          className="menu-btn"
+          onClick={() => setAberto(!aberto)}
+        >
+          ☰
+        </button>
 
-        <nav>
+        <h2>🐾 PetGuardian</h2>
+      </header>
+
+      {aberto && (
+        <div className="drawer">
           <Link to="/dashboard">Dashboard</Link>
           <Link to="/pets">Pets</Link>
           <Link to="/vacinas">Vacinas</Link>
@@ -15,8 +27,8 @@ function Navbar() {
           <Link to="/medicamentos">Medicamentos</Link>
           <Link to="/banhotosa">Banho e Tosa</Link>
           <Link to="/perfilpet">Perfil do Pet</Link>
-        </nav>
-      </aside>
+        </div>
+      )}
     </>
   );
 }
