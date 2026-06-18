@@ -18,12 +18,4 @@ export async function criarNotificacao({
         dataEvento,
         concluido: false,
     });
-
-    await enviarEmail(
-        auth.currentUser.email,
-        auth.currentUser.displayName || "tutor",
-        tipo,
-        mensagem,
-        dataEvento
-    );
 }
