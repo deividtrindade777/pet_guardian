@@ -23,6 +23,7 @@ function Dashboard() {
       );
 
       const petsSnap = await getDocs(petsQuery);
+
       const listaPets = petsSnap.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -35,10 +36,33 @@ function Dashboard() {
       const medicamentosSnap = await getDocs(collection(db, "medicamentos"));
       const banhoTosaSnap = await getDocs(collection(db, "banhoTosa"));
 
-      setVacinas(vacinasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-      setConsultas(consultasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-      setMedicamentos(medicamentosSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-      setBanhoTosa(banhoTosaSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setVacinas(
+        vacinasSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      );
+
+      setConsultas(
+        consultasSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      );
+
+      setMedicamentos(
+        medicamentosSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      );
+
+      setBanhoTosa(
+        banhoTosaSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      );
     });
 
     return () => unsubscribe();
@@ -83,7 +107,9 @@ function Dashboard() {
       (estaProximo(b.dataBanho) || estaProximo(b.dataTosa))
   );
 
-  const medicamentosAtivos = medicamentos.filter((m) => pertenceAoFiltro(m));
+  const medicamentosAtivos = medicamentos.filter((m) =>
+    pertenceAoFiltro(m)
+  );
 
   return (
     <>
@@ -97,8 +123,11 @@ function Dashboard() {
           onChange={(e) => setPetSelecionado(e.target.value)}
           style={{
             marginTop: "20px",
-            padding: "10px",
-            maxWidth: "300px",
+            padding: "12px",
+            width: "100%",
+            maxWidth: "400px",
+            borderRadius: "8px",
+            border: "1px solid #ddd",
           }}
         >
           <option value="todos">Todos os pets</option>
@@ -112,17 +141,30 @@ function Dashboard() {
 
         <div
           style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(auto-fit, minmax(180px, 1fr))",
+            gap: "15px",
             marginTop: "20px",
           }}
         >
           <Card titulo="🐾 Pets" valor={pets.length} />
-          <Card titulo="💉 Vacinas próximas" valor={vacinasProximas.length} />
-          <Card titulo="🩺 Consultas próximas" valor={consultasProximas.length} />
-          <Card titulo="💊 Medicamentos" valor={medicamentosAtivos.length} />
-          <Card titulo="✂️ Banho/Tosa próximos" valor={banhosProximos.length} />
+          <Card
+            titulo="💉 Vacinas próximas"
+            valor={vacinasProximas.length}
+          />
+          <Card
+            titulo="🩺 Consultas próximas"
+            valor={consultasProximas.length}
+          />
+          <Card
+            titulo="💊 Medicamentos"
+            valor={medicamentosAtivos.length}
+          />
+          <Card
+            titulo="✂️ Banho/Tosa"
+            valor={banhosProximos.length}
+          />
         </div>
 
         <Secao titulo="💉 Vacinas próximas">
@@ -145,7 +187,9 @@ function Dashboard() {
           ) : (
             consultasProximas.map((consulta) => (
               <Item key={consulta.id}>
-                <strong>{buscarNomePet(consulta.petId)}</strong>
+                <strong>
+                  {buscarNomePet(consulta.petId)}
+                </strong>
                 <p>Data: {consulta.dataConsulta}</p>
                 <p>Clínica: {consulta.nomeClinica}</p>
               </Item>
@@ -159,7 +203,9 @@ function Dashboard() {
           ) : (
             banhosProximos.map((registro) => (
               <Item key={registro.id}>
-                <strong>{buscarNomePet(registro.petId)}</strong>
+                <strong>
+                  {buscarNomePet(registro.petId)}
+                </strong>
                 <p>Banho: {registro.dataBanho}</p>
                 <p>Tosa: {registro.dataTosa}</p>
               </Item>
@@ -177,13 +223,29 @@ function Card({ titulo, valor }) {
       style={{
         background: "#fff",
         padding: "20px",
-        borderRadius: "10px",
-        minWidth: "220px",
-        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+        borderRadius: "12px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        width: "100%",
       }}
     >
-      <h3>{titulo}</h3>
-      <p style={{ fontSize: "28px", marginTop: "10px" }}>{valor}</p>
+      <h3
+        style={{
+          fontSize: "16px",
+          marginBottom: "10px",
+        }}
+      >
+        {titulo}
+      </h3>
+
+      <p
+        style={{
+          fontSize: "32px",
+          fontWeight: "bold",
+          color: "#e53935",
+        }}
+      >
+        {valor}
+      </p>
     </div>
   );
 }
