@@ -1,3 +1,4 @@
+import { criarNotificacao } from "../../services/notificacoesService";
 import { useEffect, useState } from "react";
 import {
   collection,
@@ -93,12 +94,11 @@ function Consultas() {
         concluido: false,
       });
 
-      await addDoc(collection(db, "notificacoes"), {
+      await criarNotificacao({
         petId,
         tipo: "Consulta",
         mensagem: `Consulta agendada na clínica ${nomeClinica}`,
         dataEvento: dataConsulta,
-        concluido: false,
       });
 
       alert("Consulta cadastrada!");

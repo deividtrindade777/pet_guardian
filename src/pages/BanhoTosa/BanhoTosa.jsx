@@ -1,3 +1,4 @@
+import { criarNotificacao } from "../../services/notificacoesService";
 import { useEffect, useState } from "react";
 import {
   collection,
@@ -94,27 +95,19 @@ function BanhoTosa() {
           concluido: false,
         });
 
-        await addDoc(
-          collection(db, "notificacoes"),
-          {
-            petId,
-            tipo: "Banho",
-            mensagem: "Seu pet precisa tomar banho",
-            dataEvento: dataBanho,
-            concluido: false,
-          }
-        );
+        await criarNotificacao({
+          petId,
+          tipo: "Banho",
+          mensagem: "Seu pet precisa tomar banho",
+          dataEvento: dataBanho,
+        });
 
-        await addDoc(
-          collection(db, "notificacoes"),
-          {
-            petId,
-            tipo: "Tosa",
-            mensagem: "Seu pet precisa fazer tosa",
-            dataEvento: dataTosa,
-            concluido: false,
-          }
-        );
+        await criarNotificacao({
+          petId,
+          tipo: "Tosa",
+          mensagem: "Seu pet precisa fazer tosa",
+          dataEvento: dataTosa,
+        });
 
         alert("Registro salvo!");
       }

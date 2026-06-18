@@ -1,3 +1,4 @@
+import { criarNotificacao } from "../../services/notificacoesService";
 import { useEffect, useState } from "react";
 import {
   collection,
@@ -107,16 +108,12 @@ function Medicamentos() {
           }
         );
 
-        await addDoc(
-          collection(db, "notificacoes"),
-          {
-            petId,
-            tipo: "Medicamento",
-            mensagem: `Medicamento ${nome} termina em breve`,
-            dataEvento: dataFim,
-            concluido: false,
-          }
-        );
+        await criarNotificacao({
+          petId,
+          tipo: "Medicamento",
+          mensagem: `Medicamento ${nome} termina em breve`,
+          dataEvento: dataFim,
+        });
 
         alert("Medicamento cadastrado!");
       }

@@ -66,6 +66,16 @@ function Register() {
           required
         />
 
+        <p
+          style={{
+            fontSize: "12px",
+            color: "#666",
+            marginTop: "-5px",
+          }}
+        >
+          A senha deve possuir pelo menos 6 caracteres.
+        </p>
+
         <button type="submit">Cadastrar</button>
 
         <p>

@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
+import { criarNotificacao } from "../../services/notificacoesService";
 
 function Vacinas() {
   const [pets, setPets] = useState([]);
@@ -129,16 +130,12 @@ function Vacinas() {
           }
         );
 
-        await addDoc(
-          collection(db, "notificacoes"),
-          {
-            petId,
-            tipo: "Vacina",
-            mensagem: `Vacina ${nomeVacina} próxima do vencimento`,
-            dataEvento: dataProximaDose,
-            concluido: false,
-          }
-        );
+        await criarNotificacao({
+          petId,
+          tipo: "Vacina",
+          mensagem: `Vacina ${nomeVacina} próxima do vencimento`,
+          dataEvento: dataProximaDose,
+        });
 
         alert("Vacina cadastrada!");
       }
