@@ -88,6 +88,15 @@ function Consultas() {
         dataConsulta,
         nomeClinica,
         observacoes,
+        concluido: false,
+      });
+
+      await addDoc(collection(db, "notificacoes"), {
+        petId,
+        tipo: "Consulta",
+        mensagem: `Consulta agendada na clínica ${nomeClinica}`,
+        dataEvento: dataConsulta,
+        concluido: false,
       });
 
       alert("Consulta cadastrada!");
@@ -117,6 +126,24 @@ function Consultas() {
     );
 
     carregarConsultas();
+  }
+
+  async function concluirConsulta(id) {
+    try {
+      await updateDoc(
+        doc(db, "consultas", id),
+        {
+          concluido: true,
+        }
+      );
+
+      alert("Consulta marcada como concluída!");
+
+      carregarConsultas();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao concluir consulta.");
+    }
   }
 
   function editarConsulta(consulta) {
@@ -240,26 +267,61 @@ function Consultas() {
                 {consulta.observacoes}
               </p>
 
-              <button
-                className="btn-primary"
-                onClick={() =>
-                  editarConsulta(consulta)
-                }
-                style={{ marginRight: "10px" }}
-              >
-                Editar
-              </button>
+              <p>
+                <strong>Status:</strong>{" "}
+                {consulta.concluido
+                  ? "✅ Concluída"
+                  : "⏳ Pendente"}
+              </p>
 
-              <button
-                className="btn-danger"
-                onClick={() =>
-                  excluirConsulta(
-                    consulta.id
-                  )
-                }
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  marginTop: "10px",
+                }}
               >
-                Excluir
-              </button>
+                <button
+                  className="btn-primary"
+                  onClick={() =>
+                    editarConsulta(consulta)
+                  }
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="btn-danger"
+                  onClick={() =>
+                    excluirConsulta(
+                      consulta.id
+                    )
+                  }
+                >
+                  Excluir
+                </button>
+
+                {!consulta.concluido && (
+                  <button
+                    onClick={() =>
+                      concluirConsulta(
+                        consulta.id
+                      )
+                    }
+                    style={{
+                      background: "#2e7d32",
+                      color: "white",
+                      border: "none",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Concluir
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}

@@ -123,6 +123,18 @@ function Vacinas() {
             nomeVacina,
             dataAplicacao,
             dataProximaDose,
+            concluido: false,
+          }
+        );
+
+        await addDoc(
+          collection(db, "notificacoes"),
+          {
+            petId,
+            tipo: "Vacina",
+            mensagem: `Vacina ${nomeVacina} próxima do vencimento`,
+            dataEvento: dataProximaDose,
+            concluido: false,
           }
         );
 
@@ -163,6 +175,23 @@ function Vacinas() {
     } catch (error) {
       console.error(error);
       alert("Erro ao excluir vacina.");
+    }
+  }
+
+  async function concluirVacina(id) {
+    try {
+      await updateDoc(
+        doc(db, "vacinas", id),
+        {
+          concluido: true,
+        }
+      );
+
+      alert("Vacina marcada como concluída!");
+
+      await carregarVacinas();
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -309,6 +338,15 @@ function Vacinas() {
                 }
               </p>
 
+              <p>
+                <strong>
+                  Status:
+                </strong>{" "}
+                {
+                  vacina.concluido ? "✅ Concluída" : "⏳ Pendente"
+                }
+              </p>
+
               <div
                 style={{
                   marginTop: "10px",
@@ -358,6 +396,22 @@ function Vacinas() {
                   }}
                 >
                   Excluir
+                </button>
+
+                <button
+                  onClick={() => concluirVacina(vacina.id)}
+                  style={{
+                    marginTop: "10px",
+                    marginLeft: "10px",
+                    background: "#2e7d32",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Concluir
                 </button>
               </div>
             </div>

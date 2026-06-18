@@ -101,6 +101,18 @@ function Medicamentos() {
             frequencia,
             dataInicio,
             dataFim,
+            concluido: false,
+          }
+        );
+
+        await addDoc(
+          collection(db, "notificacoes"),
+          {
+            petId,
+            tipo: "Medicamento",
+            mensagem: `Medicamento ${nome} termina em breve`,
+            dataEvento: dataFim,
+            concluido: false,
           }
         );
 
@@ -119,6 +131,7 @@ function Medicamentos() {
       await carregarMedicamentos();
     } catch (error) {
       console.error(error);
+      alert(error.message);
     }
   }
 
@@ -149,6 +162,24 @@ function Medicamentos() {
     alert("Medicamento removido com sucesso!");
 
     await carregarMedicamentos();
+  }
+
+  async function concluirMedicamento(id) {
+    try {
+      await updateDoc(
+        doc(db, "medicamentos", id),
+        {
+          concluido: true,
+        }
+      );
+
+      alert("Medicamento marcado como concluído!");
+
+      await carregarMedicamentos();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao concluir medicamento.");
+    }
   }
 
   return (
@@ -294,28 +325,63 @@ function Medicamentos() {
                 {medicamento.dataFim}
               </p>
 
-              <button
-                className="btn-primary"
-                onClick={() =>
-                  editarMedicamento(
-                    medicamento
-                  )
-                }
-                style={{ marginRight: "10px" }}
-              >
-                Editar
-              </button>
+              <p>
+                <strong>Status:</strong>{" "}
+                {medicamento.concluido
+                  ? "✅ Concluído"
+                  : "⏳ Pendente"}
+              </p>
 
-              <button
-                className="btn-danger"
-                onClick={() =>
-                  excluirMedicamento(
-                    medicamento.id
-                  )
-                }
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  marginTop: "10px",
+                }}
               >
-                Excluir
-              </button>
+                <button
+                  className="btn-primary"
+                  onClick={() =>
+                    editarMedicamento(
+                      medicamento
+                    )
+                  }
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="btn-danger"
+                  onClick={() =>
+                    excluirMedicamento(
+                      medicamento.id
+                    )
+                  }
+                >
+                  Excluir
+                </button>
+
+                {!medicamento.concluido && (
+                  <button
+                    onClick={() =>
+                      concluirMedicamento(
+                        medicamento.id
+                      )
+                    }
+                    style={{
+                      background: "#2e7d32",
+                      color: "white",
+                      border: "none",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Concluir
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}

@@ -89,7 +89,30 @@ function BanhoTosa() {
           dataBanho,
           dataTosa,
           observacoes,
+          concluido: false,
         });
+
+        await addDoc(
+          collection(db, "notificacoes"),
+          {
+            petId,
+            tipo: "Banho",
+            mensagem: "Seu pet precisa tomar banho",
+            dataEvento: dataBanho,
+            concluido: false,
+          }
+        );
+
+        await addDoc(
+          collection(db, "notificacoes"),
+          {
+            petId,
+            tipo: "Tosa",
+            mensagem: "Seu pet precisa fazer tosa",
+            dataEvento: dataTosa,
+            concluido: false,
+          }
+        );
 
         alert("Registro salvo!");
       }
@@ -104,6 +127,7 @@ function BanhoTosa() {
       await carregarRegistros();
     } catch (error) {
       console.error(error);
+      alert(error.message);
     }
   }
 
@@ -132,6 +156,24 @@ function BanhoTosa() {
     alert("Registro removido com sucesso!");
 
     await carregarRegistros();
+  }
+
+  async function concluirRegistro(id) {
+    try {
+      await updateDoc(
+        doc(db, "banhoTosa", id),
+        {
+          concluido: true,
+        }
+      );
+
+      alert("Registro marcado como concluído!");
+
+      await carregarRegistros();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao concluir registro.");
+    }
   }
 
   return (
@@ -249,26 +291,61 @@ function BanhoTosa() {
                 {registro.observacoes}
               </p>
 
-              <button
-                className="btn-primary"
-                onClick={() =>
-                  editarRegistro(registro)
-                }
-                style={{ marginRight: "10px" }}
-              >
-                Editar
-              </button>
+              <p>
+                <strong>Status:</strong>{" "}
+                {registro.concluido
+                  ? "✅ Concluído"
+                  : "⏳ Pendente"}
+              </p>
 
-              <button
-                className="btn-danger"
-                onClick={() =>
-                  excluirRegistro(
-                    registro.id
-                  )
-                }
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  marginTop: "10px",
+                }}
               >
-                Excluir
-              </button>
+                <button
+                  className="btn-primary"
+                  onClick={() =>
+                    editarRegistro(registro)
+                  }
+                >
+                  Editar
+                </button>
+
+                <button
+                  className="btn-danger"
+                  onClick={() =>
+                    excluirRegistro(
+                      registro.id
+                    )
+                  }
+                >
+                  Excluir
+                </button>
+
+                {!registro.concluido && (
+                  <button
+                    onClick={() =>
+                      concluirRegistro(
+                        registro.id
+                      )
+                    }
+                    style={{
+                      background: "#2e7d32",
+                      color: "white",
+                      border: "none",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Concluir
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}

@@ -27,6 +27,7 @@ function Navbar() {
           <Link to="/medicamentos">Medicamentos</Link>
           <Link to="/banhotosa">Banho e Tosa</Link>
           <Link to="/perfilpet">Perfil do Pet</Link>
+          <Link to="/notificacoes">🔔 Notificações</Link>
         </div>
       )}
     </>

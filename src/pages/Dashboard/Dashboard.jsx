@@ -12,6 +12,7 @@ function Dashboard() {
   const [consultas, setConsultas] = useState([]);
   const [medicamentos, setMedicamentos] = useState([]);
   const [banhoTosa, setBanhoTosa] = useState([]);
+  const [notificacoes, setNotificacoes] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -63,6 +64,17 @@ function Dashboard() {
           ...doc.data(),
         }))
       );
+
+      const notificacoesSnap = await getDocs(
+        collection(db, "notificacoes")
+      );
+
+      setNotificacoes(
+        notificacoesSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      );
     });
 
     return () => unsubscribe();
@@ -109,6 +121,10 @@ function Dashboard() {
 
   const medicamentosAtivos = medicamentos.filter((m) =>
     pertenceAoFiltro(m)
+  );
+
+  const notificacoesPendentes = notificacoes.filter(
+    (n) => !n.concluido
   );
 
   return (
@@ -208,6 +224,30 @@ function Dashboard() {
                 </strong>
                 <p>Banho: {registro.dataBanho}</p>
                 <p>Tosa: {registro.dataTosa}</p>
+              </Item>
+            ))
+          )}
+        </Secao>
+
+        <Secao titulo="🔔 Notificações">
+          {notificacoesPendentes.length === 0 ? (
+            <p>Nenhuma notificação pendente.</p>
+          ) : (
+            notificacoesPendentes.map((notificacao) => (
+              <Item key={notificacao.id}>
+                <strong>{notificacao.tipo}</strong>
+
+                <p>
+                  Pet: {buscarNomePet(notificacao.petId)}
+                </p>
+
+                <p>
+                  Vencimento: {notificacao.dataEvento}
+                </p>
+
+                <p>
+                  {notificacao.mensagem}
+                </p>
               </Item>
             ))
           )}
