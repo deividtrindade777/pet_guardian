@@ -10,7 +10,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db } from "../../services/firebase";
+import { auth, db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
 
 function BanhoTosa() {
@@ -31,7 +31,12 @@ function BanhoTosa() {
   }, []);
 
   async function carregarPets() {
-    const snapshot = await getDocs(collection(db, "pets"));
+    const q = query(
+      collection(db, "pets"),
+      where("userId", "==", auth.currentUser.uid)
+    );
+
+    const snapshot = await getDocs(q);
 
     const lista = [];
 
@@ -46,9 +51,12 @@ function BanhoTosa() {
   }
 
   async function carregarRegistros() {
-    const snapshot = await getDocs(
-      collection(db, "banhoTosa")
+    const q = query(
+      collection(db, "banhoTosa"),
+      where("userId", "==", auth.currentUser.uid)
     );
+
+    const snapshot = await getDocs(q);
 
     const lista = [];
 
@@ -88,6 +96,7 @@ function BanhoTosa() {
         alert("Registro atualizado!");
       } else {
         await addDoc(collection(db, "banhoTosa"), {
+          userId: auth.currentUser.uid,
           petId,
           dataBanho,
           dataTosa,
@@ -152,6 +161,7 @@ function BanhoTosa() {
       const notificacoesSnapshot = await getDocs(
         query(
           collection(db, "notificacoes"),
+          where("userId", "==", auth.currentUser.uid),
           where("petId", "==", registro.petId)
         )
       );
@@ -200,6 +210,7 @@ function BanhoTosa() {
       const notificacoesSnapshot = await getDocs(
         query(
           collection(db, "notificacoes"),
+          where("userId", "==", auth.currentUser.uid),
           where("petId", "==", registro.petId)
         )
       );

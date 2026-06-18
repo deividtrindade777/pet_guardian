@@ -1,3 +1,4 @@
+import { enviarEmail } from "../../services/emailService";
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../services/firebase";
@@ -32,10 +33,33 @@ function Dashboard() {
 
       setPets(listaPets);
 
-      const vacinasSnap = await getDocs(collection(db, "vacinas"));
-      const consultasSnap = await getDocs(collection(db, "consultas"));
-      const medicamentosSnap = await getDocs(collection(db, "medicamentos"));
-      const banhoTosaSnap = await getDocs(collection(db, "banhoTosa"));
+      const vacinasSnap = await getDocs(
+        query(
+          collection(db, "vacinas"),
+          where("userId", "==", user.uid)
+        )
+      );
+
+      const consultasSnap = await getDocs(
+        query(
+          collection(db, "consultas"),
+          where("userId", "==", user.uid)
+        )
+      );
+
+      const medicamentosSnap = await getDocs(
+        query(
+          collection(db, "medicamentos"),
+          where("userId", "==", user.uid)
+        )
+      );
+
+      const banhoTosaSnap = await getDocs(
+        query(
+          collection(db, "banhoTosa"),
+          where("userId", "==", user.uid)
+        )
+      );
 
       setVacinas(
         vacinasSnap.docs.map((doc) => ({
@@ -66,7 +90,10 @@ function Dashboard() {
       );
 
       const notificacoesSnap = await getDocs(
-        collection(db, "notificacoes")
+        query(
+          collection(db, "notificacoes"),
+          where("userId", "==", user.uid)
+        )
       );
 
       setNotificacoes(
@@ -76,6 +103,20 @@ function Dashboard() {
         }))
       );
     });
+    async function testarEmail() {
+      try {
+        await enviarEmail(
+          "silvadeivi321@gmail.com",
+          "Teste PetGuardian",
+          "Se você recebeu este email, o EmailJS está funcionando."
+        );
+
+        alert("Email enviado!");
+      } catch (error) {
+        console.error(error);
+        alert("Erro ao enviar email.");
+      }
+    }
 
     return () => unsubscribe();
   }, []);

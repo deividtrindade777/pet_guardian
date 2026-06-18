@@ -4,9 +4,11 @@ import {
   getDocs,
   updateDoc,
   doc,
+  query,
+  where,
 } from "firebase/firestore";
 
-import { db } from "../../services/firebase";
+import { auth, db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
 
 function Notificacoes() {
@@ -19,9 +21,12 @@ function Notificacoes() {
   }, []);
 
   async function carregarPets() {
-    const snapshot = await getDocs(
-      collection(db, "pets")
+    const q = query(
+      collection(db, "pets"),
+      where("userId", "==", auth.currentUser.uid)
     );
+
+    const snapshot = await getDocs(q);
 
     const lista = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -32,9 +37,12 @@ function Notificacoes() {
   }
 
   async function carregarNotificacoes() {
-    const snapshot = await getDocs(
-      collection(db, "notificacoes")
+    const q = query(
+      collection(db, "notificacoes"),
+      where("userId", "==", auth.currentUser.uid)
     );
+
+    const snapshot = await getDocs(q);
 
     const lista = snapshot.docs.map((doc) => ({
       id: doc.id,

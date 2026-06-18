@@ -10,7 +10,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db } from "../../services/firebase";
+import { auth, db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
 
 function Consultas() {
@@ -31,7 +31,12 @@ function Consultas() {
   }, []);
 
   async function carregarPets() {
-    const snapshot = await getDocs(collection(db, "pets"));
+    const q = query(
+      collection(db, "pets"),
+      where("userId", "==", auth.currentUser.uid)
+    );
+
+    const snapshot = await getDocs(q);
 
     const lista = [];
 
@@ -46,9 +51,12 @@ function Consultas() {
   }
 
   async function carregarConsultas() {
-    const snapshot = await getDocs(
-      collection(db, "consultas")
+    const q = query(
+      collection(db, "consultas"),
+      where("userId", "==", auth.currentUser.uid)
     );
+
+    const snapshot = await getDocs(q);
 
     const lista = [];
 
@@ -87,6 +95,7 @@ function Consultas() {
       alert("Consulta atualizada!");
     } else {
       await addDoc(collection(db, "consultas"), {
+        userId: auth.currentUser.uid,
         petId,
         dataConsulta,
         nomeClinica,
@@ -130,13 +139,10 @@ function Consultas() {
 
       const notificacoesQuery = query(
         collection(db, "notificacoes"),
+        where("userId", "==", auth.currentUser.uid),
         where("petId", "==", consulta.petId),
         where("tipo", "==", "Consulta"),
-        where(
-          "dataEvento",
-          "==",
-          consulta.dataConsulta
-        )
+        where("dataEvento", "==", consulta.dataConsulta)
       );
 
       const notificacoesSnapshot =
@@ -180,13 +186,10 @@ function Consultas() {
 
       const notificacoesQuery = query(
         collection(db, "notificacoes"),
+        where("userId", "==", auth.currentUser.uid),
         where("petId", "==", consulta.petId),
         where("tipo", "==", "Consulta"),
-        where(
-          "dataEvento",
-          "==",
-          consulta.dataConsulta
-        )
+        where("dataEvento", "==", consulta.dataConsulta)
       );
 
       const notificacoesSnapshot =

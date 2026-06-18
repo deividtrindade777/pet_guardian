@@ -9,7 +9,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db } from "../../services/firebase";
+import { auth, db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
 import { criarNotificacao } from "../../services/notificacoesService";
 
@@ -32,9 +32,12 @@ function Vacinas() {
 
   async function carregarPets() {
     try {
-      const snapshot = await getDocs(
-        collection(db, "pets")
+      const q = query(
+        collection(db, "pets"),
+        where("userId", "==", auth.currentUser.uid)
       );
+
+      const snapshot = await getDocs(q);
 
       const lista = [];
 
@@ -53,9 +56,16 @@ function Vacinas() {
 
   async function carregarVacinas() {
     try {
-      const snapshot = await getDocs(
-        collection(db, "vacinas")
+      const q = query(
+        collection(db, "vacinas"),
+        where(
+          "userId",
+          "==",
+          auth.currentUser.uid
+        )
       );
+
+      const snapshot = await getDocs(q);
 
       const lista = [];
 
@@ -122,6 +132,7 @@ function Vacinas() {
         await addDoc(
           collection(db, "vacinas"),
           {
+            userId: auth.currentUser.uid,
             petId,
             nomeVacina,
             dataAplicacao,
@@ -167,6 +178,7 @@ function Vacinas() {
       const notificacoesSnapshot = await getDocs(
         query(
           collection(db, "notificacoes"),
+          where("userId", "==", auth.currentUser.uid),
           where("petId", "==", vacina.petId)
         )
       );

@@ -10,7 +10,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db } from "../../services/firebase";
+import { auth, db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
 
 function Medicamentos() {
@@ -33,7 +33,12 @@ function Medicamentos() {
   }, []);
 
   async function carregarPets() {
-    const snapshot = await getDocs(collection(db, "pets"));
+    const q = query(
+      collection(db, "pets"),
+      where("userId", "==", auth.currentUser.uid)
+    );
+
+    const snapshot = await getDocs(q);
 
     const lista = [];
 
@@ -48,9 +53,12 @@ function Medicamentos() {
   }
 
   async function carregarMedicamentos() {
-    const snapshot = await getDocs(
-      collection(db, "medicamentos")
+    const q = query(
+      collection(db, "medicamentos"),
+      where("userId", "==", auth.currentUser.uid)
     );
+
+    const snapshot = await getDocs(q);
 
     const lista = [];
 
@@ -98,6 +106,7 @@ function Medicamentos() {
         await addDoc(
           collection(db, "medicamentos"),
           {
+            userId: auth.currentUser.uid,
             petId,
             nome,
             dosagem,
@@ -164,13 +173,10 @@ function Medicamentos() {
 
       const q = query(
         notificacoesRef,
+        where("userId", "==", auth.currentUser.uid),
         where("petId", "==", medicamento.petId),
         where("tipo", "==", "Medicamento"),
-        where(
-          "dataEvento",
-          "==",
-          medicamento.dataFim
-        )
+        where("dataEvento", "==", medicamento.dataFim)
       );
 
       const snapshot = await getDocs(q);
@@ -209,13 +215,10 @@ function Medicamentos() {
 
       const q = query(
         collection(db, "notificacoes"),
+        where("userId", "==", auth.currentUser.uid),
         where("petId", "==", medicamento.petId),
         where("tipo", "==", "Medicamento"),
-        where(
-          "dataEvento",
-          "==",
-          medicamento.dataFim
-        )
+        where("dataEvento", "==", medicamento.dataFim)
       );
 
       const snapshot = await getDocs(q);

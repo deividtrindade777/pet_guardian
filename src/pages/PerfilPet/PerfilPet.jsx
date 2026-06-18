@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../services/firebase";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+
+import { auth, db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
 
 function PerfilPet() {
@@ -17,14 +23,35 @@ function PerfilPet() {
   }, []);
 
   async function carregarDados() {
-    const petsSnap = await getDocs(collection(db, "pets"));
-    const vacinasSnap = await getDocs(collection(db, "vacinas"));
-    const consultasSnap = await getDocs(collection(db, "consultas"));
+    const petsSnap = await getDocs(
+      query(
+        collection(db, "pets"),
+        where("userId", "==", auth.currentUser.uid)
+      )
+    );
+    const vacinasSnap = await getDocs(
+      query(
+        collection(db, "vacinas"),
+        where("userId", "==", auth.currentUser.uid)
+      )
+    );
+    const consultasSnap = await getDocs(
+      query(
+        collection(db, "consultas"),
+        where("userId", "==", auth.currentUser.uid)
+      )
+    );
     const medicamentosSnap = await getDocs(
-      collection(db, "medicamentos")
+      query(
+        collection(db, "medicamentos"),
+        where("userId", "==", auth.currentUser.uid)
+      )
     );
     const banhoTosaSnap = await getDocs(
-      collection(db, "banhoTosa")
+      query(
+        collection(db, "banhoTosa"),
+        where("userId", "==", auth.currentUser.uid)
+      )
     );
 
     setPets(
