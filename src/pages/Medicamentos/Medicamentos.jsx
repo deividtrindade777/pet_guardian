@@ -6,6 +6,8 @@ import {
   deleteDoc,
   updateDoc,
   doc,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
@@ -155,23 +157,77 @@ function Medicamentos() {
       return;
     }
 
-    await deleteDoc(
-      doc(db, "medicamentos", id)
-    );
+    try {
+      const medicamento = medicamentos.find(
+        (m) => m.id === id
+      );
 
-    alert("Medicamento removido com sucesso!");
+      const notificacoesRef =
+        collection(db, "notificacoes");
 
-    await carregarMedicamentos();
+      const q = query(
+        notificacoesRef,
+        where("petId", "==", medicamento.petId),
+        where("tipo", "==", "Medicamento"),
+        where(
+          "dataEvento",
+          "==",
+          medicamento.dataFim
+        )
+      );
+
+      const snapshot = await getDocs(q);
+
+      for (const documento of snapshot.docs) {
+        await deleteDoc(
+          doc(db, "notificacoes", documento.id)
+        );
+      }
+
+      await deleteDoc(
+        doc(db, "medicamentos", id)
+      );
+
+      alert("Medicamento removido com sucesso!");
+
+      await carregarMedicamentos();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao excluir medicamento.");
+    }
   }
 
   async function concluirMedicamento(id) {
     try {
+      const medicamento = medicamentos.find(
+        (m) => m.id === id
+      );
+
       await updateDoc(
         doc(db, "medicamentos", id),
         {
           concluido: true,
         }
       );
+
+      const q = query(
+        collection(db, "notificacoes"),
+        where("petId", "==", medicamento.petId),
+        where("tipo", "==", "Medicamento"),
+        where(
+          "dataEvento",
+          "==",
+          medicamento.dataFim
+        )
+      );
+
+      const snapshot = await getDocs(q);
+
+      for (const documento of snapshot.docs) {
+        await deleteDoc(
+          doc(db, "notificacoes", documento.id)
+        );
+      }
 
       alert("Medicamento marcado como concluído!");
 

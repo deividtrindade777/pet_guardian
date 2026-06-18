@@ -6,6 +6,8 @@ import {
   deleteDoc,
   updateDoc,
   doc,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
@@ -149,23 +151,80 @@ function BanhoTosa() {
       return;
     }
 
-    await deleteDoc(
-      doc(db, "banhoTosa", id)
-    );
+    try {
+      const registro = registros.find(
+        (r) => r.id === id
+      );
 
-    alert("Registro removido com sucesso!");
+      const notificacoesSnapshot = await getDocs(
+        query(
+          collection(db, "notificacoes"),
+          where("petId", "==", registro.petId)
+        )
+      );
 
-    await carregarRegistros();
+      for (const documento of notificacoesSnapshot.docs) {
+        const notificacao = documento.data();
+
+        if (
+          (notificacao.tipo === "Banho" &&
+            notificacao.dataEvento === registro.dataBanho) ||
+          (notificacao.tipo === "Tosa" &&
+            notificacao.dataEvento === registro.dataTosa)
+        ) {
+          await deleteDoc(
+            doc(db, "notificacoes", documento.id)
+          );
+        }
+      }
+
+      await deleteDoc(
+        doc(db, "banhoTosa", id)
+      );
+
+      alert("Registro removido com sucesso!");
+
+      await carregarRegistros();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao excluir registro.");
+    }
   }
 
   async function concluirRegistro(id) {
     try {
+      const registro = registros.find(
+        (r) => r.id === id
+      );
+
       await updateDoc(
         doc(db, "banhoTosa", id),
         {
           concluido: true,
         }
       );
+
+      const notificacoesSnapshot = await getDocs(
+        query(
+          collection(db, "notificacoes"),
+          where("petId", "==", registro.petId)
+        )
+      );
+
+      for (const documento of notificacoesSnapshot.docs) {
+        const notificacao = documento.data();
+
+        if (
+          (notificacao.tipo === "Banho" &&
+            notificacao.dataEvento === registro.dataBanho) ||
+          (notificacao.tipo === "Tosa" &&
+            notificacao.dataEvento === registro.dataTosa)
+        ) {
+          await deleteDoc(
+            doc(db, "notificacoes", documento.id)
+          );
+        }
+      }
 
       alert("Registro marcado como concluído!");
 

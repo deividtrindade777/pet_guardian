@@ -6,6 +6,8 @@ import {
   deleteDoc,
   updateDoc,
   doc,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
@@ -121,21 +123,87 @@ function Consultas() {
       return;
     }
 
-    await deleteDoc(
-      doc(db, "consultas", id)
-    );
+    try {
+      const consulta = consultas.find(
+        (c) => c.id === id
+      );
 
-    carregarConsultas();
+      const notificacoesQuery = query(
+        collection(db, "notificacoes"),
+        where("petId", "==", consulta.petId),
+        where("tipo", "==", "Consulta"),
+        where(
+          "dataEvento",
+          "==",
+          consulta.dataConsulta
+        )
+      );
+
+      const notificacoesSnapshot =
+        await getDocs(notificacoesQuery);
+
+      for (const notificacao of notificacoesSnapshot.docs) {
+        await deleteDoc(
+          doc(
+            db,
+            "notificacoes",
+            notificacao.id
+          )
+        );
+      }
+
+      await deleteDoc(
+        doc(db, "consultas", id)
+      );
+
+      alert("Consulta removida com sucesso!");
+
+      carregarConsultas();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao excluir consulta.");
+    }
   }
 
   async function concluirConsulta(id) {
     try {
+      const consulta = consultas.find(
+        (c) => c.id === id
+      );
+
       await updateDoc(
         doc(db, "consultas", id),
         {
           concluido: true,
         }
       );
+
+      const notificacoesQuery = query(
+        collection(db, "notificacoes"),
+        where("petId", "==", consulta.petId),
+        where("tipo", "==", "Consulta"),
+        where(
+          "dataEvento",
+          "==",
+          consulta.dataConsulta
+        )
+      );
+
+      const notificacoesSnapshot =
+        await getDocs(notificacoesQuery);
+
+      for (const notificacao of notificacoesSnapshot.docs) {
+        await updateDoc(
+          doc(
+            db,
+            "notificacoes",
+            notificacao.id
+          ),
+          {
+            concluido: true,
+          }
+        );
+      }
 
       alert("Consulta marcada como concluída!");
 

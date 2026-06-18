@@ -6,6 +6,8 @@ import {
   deleteDoc,
   updateDoc,
   doc,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import Navbar from "../../components/Navbar/Navbar";
@@ -163,13 +165,31 @@ function Vacinas() {
     if (!confirmar) return;
 
     try {
-      await deleteDoc(
-        doc(db, "vacinas", id)
+      const vacina = vacinas.find((v) => v.id === id);
+
+      const notificacoesSnapshot = await getDocs(
+        query(
+          collection(db, "notificacoes"),
+          where("petId", "==", vacina.petId)
+        )
       );
 
-      alert(
-        "Vacina removida com sucesso!"
-      );
+      for (const documento of notificacoesSnapshot.docs) {
+        const notificacao = documento.data();
+
+        if (
+          notificacao.tipo === "Vacina" &&
+          notificacao.dataEvento === vacina.dataProximaDose
+        ) {
+          await deleteDoc(
+            doc(db, "notificacoes", documento.id)
+          );
+        }
+      }
+
+      await deleteDoc(doc(db, "vacinas", id));
+
+      alert("Vacina removida com sucesso!");
 
       await carregarVacinas();
     } catch (error) {
@@ -180,6 +200,10 @@ function Vacinas() {
 
   async function concluirVacina(id) {
     try {
+      const vacina = vacinas.find(
+        (v) => v.id === id
+      );
+
       await updateDoc(
         doc(db, "vacinas", id),
         {
@@ -187,11 +211,32 @@ function Vacinas() {
         }
       );
 
+      const notificacoesSnapshot = await getDocs(
+        query(
+          collection(db, "notificacoes"),
+          where("petId", "==", vacina.petId)
+        )
+      );
+
+      for (const documento of notificacoesSnapshot.docs) {
+        const notificacao = documento.data();
+
+        if (
+          notificacao.tipo === "Vacina" &&
+          notificacao.dataEvento === vacina.dataProximaDose
+        ) {
+          await deleteDoc(
+            doc(db, "notificacoes", documento.id)
+          );
+        }
+      }
+
       alert("Vacina marcada como concluída!");
 
       await carregarVacinas();
     } catch (error) {
       console.error(error);
+      alert("Erro ao concluir vacina.");
     }
   }
 

@@ -104,20 +104,83 @@ function Pets() {
 
   async function excluirPet(id) {
     const confirmar = window.confirm(
-      "Deseja realmente excluir este pet?"
+      "Deseja realmente excluir este pet e todos os registros relacionados?"
     );
 
     if (!confirmar) return;
 
     try {
+      // Vacinas
+      const vacinasSnapshot = await getDocs(
+        query(
+          collection(db, "vacinas"),
+          where("petId", "==", id)
+        )
+      );
+
+      for (const documento of vacinasSnapshot.docs) {
+        await deleteDoc(doc(db, "vacinas", documento.id));
+      }
+
+      // Consultas
+      const consultasSnapshot = await getDocs(
+        query(
+          collection(db, "consultas"),
+          where("petId", "==", id)
+        )
+      );
+
+      for (const documento of consultasSnapshot.docs) {
+        await deleteDoc(doc(db, "consultas", documento.id));
+      }
+
+      // Medicamentos
+      const medicamentosSnapshot = await getDocs(
+        query(
+          collection(db, "medicamentos"),
+          where("petId", "==", id)
+        )
+      );
+
+      for (const documento of medicamentosSnapshot.docs) {
+        await deleteDoc(doc(db, "medicamentos", documento.id));
+      }
+
+      // Banho e Tosa
+      const banhoTosaSnapshot = await getDocs(
+        query(
+          collection(db, "banhoTosa"),
+          where("petId", "==", id)
+        )
+      );
+
+      for (const documento of banhoTosaSnapshot.docs) {
+        await deleteDoc(doc(db, "banhoTosa", documento.id));
+      }
+
+      // Notificações
+      const notificacoesSnapshot = await getDocs(
+        query(
+          collection(db, "notificacoes"),
+          where("petId", "==", id)
+        )
+      );
+
+      for (const documento of notificacoesSnapshot.docs) {
+        await deleteDoc(
+          doc(db, "notificacoes", documento.id)
+        );
+      }
+
+      // Pet
       await deleteDoc(doc(db, "pets", id));
 
-      alert("Pet removido com sucesso!");
+      alert("Pet e registros relacionados removidos!");
 
       await carregarPets();
     } catch (error) {
       console.error(error);
-      alert("Erro ao excluir pet.");
+      alert(error.message);
     }
   }
 
