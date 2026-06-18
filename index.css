@@ -1,0 +1,27 @@
+.btn-danger {
+  background: #d32f2f;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-danger:hover {
+  background: #b71c1c;
+}
+
+.btn-primary {
+  background: #1976d2;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  background: #1565c0;
+}

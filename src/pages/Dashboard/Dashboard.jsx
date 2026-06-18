@@ -1,0 +1,216 @@
+import { useEffect, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { auth, db } from "../../services/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import Navbar from "../../components/Navbar/Navbar";
+
+function Dashboard() {
+  const [pets, setPets] = useState([]);
+  const [petSelecionado, setPetSelecionado] = useState("todos");
+
+  const [vacinas, setVacinas] = useState([]);
+  const [consultas, setConsultas] = useState([]);
+  const [medicamentos, setMedicamentos] = useState([]);
+  const [banhoTosa, setBanhoTosa] = useState([]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+
+      const petsQuery = query(
+        collection(db, "pets"),
+        where("userId", "==", user.uid)
+      );
+
+      const petsSnap = await getDocs(petsQuery);
+      const listaPets = petsSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      setPets(listaPets);
+
+      const vacinasSnap = await getDocs(collection(db, "vacinas"));
+      const consultasSnap = await getDocs(collection(db, "consultas"));
+      const medicamentosSnap = await getDocs(collection(db, "medicamentos"));
+      const banhoTosaSnap = await getDocs(collection(db, "banhoTosa"));
+
+      setVacinas(vacinasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setConsultas(consultasSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setMedicamentos(medicamentosSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setBanhoTosa(banhoTosaSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  function buscarNomePet(petId) {
+    const pet = pets.find((p) => p.id === petId);
+    return pet ? pet.nome : "Pet não encontrado";
+  }
+
+  function pertenceAoFiltro(item) {
+    if (petSelecionado === "todos") {
+      return pets.some((pet) => pet.id === item.petId);
+    }
+
+    return item.petId === petSelecionado;
+  }
+
+  function estaProximo(data) {
+    if (!data) return false;
+
+    const hoje = new Date();
+    const dataItem = new Date(data);
+    const limite = new Date();
+
+    limite.setDate(hoje.getDate() + 30);
+
+    return dataItem >= hoje && dataItem <= limite;
+  }
+
+  const vacinasProximas = vacinas.filter(
+    (v) => pertenceAoFiltro(v) && estaProximo(v.dataProximaDose)
+  );
+
+  const consultasProximas = consultas.filter(
+    (c) => pertenceAoFiltro(c) && estaProximo(c.dataConsulta)
+  );
+
+  const banhosProximos = banhoTosa.filter(
+    (b) =>
+      pertenceAoFiltro(b) &&
+      (estaProximo(b.dataBanho) || estaProximo(b.dataTosa))
+  );
+
+  const medicamentosAtivos = medicamentos.filter((m) => pertenceAoFiltro(m));
+
+  return (
+    <>
+      <Navbar />
+
+      <div className="container">
+        <h1>Dashboard</h1>
+
+        <select
+          value={petSelecionado}
+          onChange={(e) => setPetSelecionado(e.target.value)}
+          style={{
+            marginTop: "20px",
+            padding: "10px",
+            maxWidth: "300px",
+          }}
+        >
+          <option value="todos">Todos os pets</option>
+
+          {pets.map((pet) => (
+            <option key={pet.id} value={pet.id}>
+              {pet.nome}
+            </option>
+          ))}
+        </select>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "20px",
+            flexWrap: "wrap",
+            marginTop: "20px",
+          }}
+        >
+          <Card titulo="🐾 Pets" valor={pets.length} />
+          <Card titulo="💉 Vacinas próximas" valor={vacinasProximas.length} />
+          <Card titulo="🩺 Consultas próximas" valor={consultasProximas.length} />
+          <Card titulo="💊 Medicamentos" valor={medicamentosAtivos.length} />
+          <Card titulo="✂️ Banho/Tosa próximos" valor={banhosProximos.length} />
+        </div>
+
+        <Secao titulo="💉 Vacinas próximas">
+          {vacinasProximas.length === 0 ? (
+            <p>Nenhuma vacina próxima.</p>
+          ) : (
+            vacinasProximas.map((vacina) => (
+              <Item key={vacina.id}>
+                <strong>{vacina.nomeVacina}</strong>
+                <p>Pet: {buscarNomePet(vacina.petId)}</p>
+                <p>Próxima dose: {vacina.dataProximaDose}</p>
+              </Item>
+            ))
+          )}
+        </Secao>
+
+        <Secao titulo="🩺 Próximas consultas">
+          {consultasProximas.length === 0 ? (
+            <p>Nenhuma consulta próxima.</p>
+          ) : (
+            consultasProximas.map((consulta) => (
+              <Item key={consulta.id}>
+                <strong>{buscarNomePet(consulta.petId)}</strong>
+                <p>Data: {consulta.dataConsulta}</p>
+                <p>Clínica: {consulta.nomeClinica}</p>
+              </Item>
+            ))
+          )}
+        </Secao>
+
+        <Secao titulo="✂️ Próximos banhos e tosas">
+          {banhosProximos.length === 0 ? (
+            <p>Nenhum banho ou tosa próximo.</p>
+          ) : (
+            banhosProximos.map((registro) => (
+              <Item key={registro.id}>
+                <strong>{buscarNomePet(registro.petId)}</strong>
+                <p>Banho: {registro.dataBanho}</p>
+                <p>Tosa: {registro.dataTosa}</p>
+              </Item>
+            ))
+          )}
+        </Secao>
+      </div>
+    </>
+  );
+}
+
+function Card({ titulo, valor }) {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        padding: "20px",
+        borderRadius: "10px",
+        minWidth: "220px",
+        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+      }}
+    >
+      <h3>{titulo}</h3>
+      <p style={{ fontSize: "28px", marginTop: "10px" }}>{valor}</p>
+    </div>
+  );
+}
+
+function Secao({ titulo, children }) {
+  return (
+    <div style={{ marginTop: "30px" }}>
+      <h2>{titulo}</h2>
+      {children}
+    </div>
+  );
+}
+
+function Item({ children }) {
+  return (
+    <div
+      style={{
+        background: "#fff",
+        padding: "15px",
+        marginTop: "10px",
+        borderRadius: "8px",
+        boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export default Dashboard;
